@@ -812,7 +812,7 @@ export const compileOptimizations = (): (ast: Int32Array, constants: bigint[], a
   code += `return ${rootPtrVar}}`
   return Enable.Stats !== 0
     ? new Function(recordStatsVar, `return(${astVar},${constantsVar},${allocateNode},${rootPtrVar})=>{${code}}`)(recordStats)
-    : new Function(astVar, constantsVar, allocateNode, rootPtrVar, code)
+    : new Function(astVar, constantsVar, allocateNode, rootPtrVar, code) as any
 }
 
 let stats: Record<string, number> | undefined

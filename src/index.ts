@@ -25,7 +25,9 @@ const validate = (input: any): boolean => {
     throw TypeError('Invalid buffer source')
   }
   try {
-    new Module(input)
+    // This cast ignores the "ArrayBufferView<SharedArrayBuffer>" type, which is necessary for changes in TypeScript 5.7+:
+    // https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/#typedarrays-are-now-generic-over-arraybufferlike
+    new Module(input as unknown as ArrayBuffer | ArrayBufferView<ArrayBuffer>)
     return true
   } catch {
     return false
@@ -45,7 +47,7 @@ const wasmAPI: Partial<typeof WebAssembly> = {
   Table,
 
   // This cast ignores the lack of a call signature without "new", which we don't support
-  CompileError: CompileError as typeof WebAssembly.CompileError,
+  CompileError: CompileError as unknown as typeof WebAssembly.CompileError,
 }
 
 export { wasmAPI as WebAssembly }
