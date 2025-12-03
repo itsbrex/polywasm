@@ -1535,8 +1535,9 @@ export const compileCode = (
   if (stackLimit > 255) throw Error('Deep stacks are not supported')
 
   // Wrap the body with the arguments
-  const name = JSON.stringify('wasm:' + (nameSection.get(funcIndex) || `function[${codeIndex}]`))
-  const js = `return{${name}(${names.slice(0, argCount)}){var ${decls};${body}}}[${name}]`
+  const name = nameSection.get(funcIndex)
+  const quoted = JSON.stringify('wasm:' + (name ? /^_ZN/.test(name) ? demangleRustLegacyFormat(name) : name : `function[${codeIndex}]`))
+  const js = `return{${quoted}(${names.slice(0, argCount)}){var ${decls};${body}}}[${quoted}]`
   return new Function('f', 'F', 'c', 't', 'd', 'e', 'g', 'l', js)(
     funcs,
     createLazyFunc,
@@ -1547,6 +1548,27 @@ export const compileCode = (
     globals,
     library,
   )
+}
+
+// This demangler is provided as a convenience for Rust WASM functions. Example:
+// "_ZN5alloc3vec12Vec$LT$T$GT$3new17he8bac7ba7b1fe08aE" => "alloc::vec::Vec<T>::new"
+const escapeRustLegacyFormat: Record<string, string> = { SP: '@', BP: '*', RF: '&', LT: '<', GT: '>', LP: '(', RP: ')', C: ',' }
+const demangleRustLegacyFormat = (name: string): string => {
+  let parts: string[] = []
+  let i = 3
+  let match: RegExpExecArray | null
+  while (match = /^\d+/.exec(name.slice(i))) {
+    i += match[0].length
+    parts.push(name
+      .slice(i, i += +match[0])
+      .replace(/^_\$/, '$')
+      .replace(/\.\./g, '::')
+      .replace(/\$(\w|\w\w|u[0-9a-f]+)\$/g, (a, b) =>
+        b[0] == 'u' ? String.fromCodePoint(parseInt(b.slice(1), 16)) : escapeRustLegacyFormat[b] || a))
+  }
+  if (/^h[0-9a-f]+$/.test(parts[parts.length - 1]))
+    parts.pop()
+  return parts.join('::') + (name[i] == 'E' ? name.slice(i + 1).replace(/^\.llvm\.[0-9A-F@]+$/, '') : '')
 }
 
 // This can pretty-print the expression subtree at "ptr" (for use with debugging)

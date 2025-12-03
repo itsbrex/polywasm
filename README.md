@@ -33,7 +33,7 @@ You need to include this polyfill before code that uses the WebAssembly API:
 
 This polyfill is published to npm in the [`polywasm`](https://www.npmjs.com/package/polywasm) package which contains the files `polywasm/index.js` and `polywasm/index.min.js`. If you want to build the polyfill yourself instead of installing it through npm, you can clone this repo and run `npm ci` follwed by `npm run build`.
 
-The minified code is small (only ~32kb) and can potentially be optionally loaded only when needed. Keep in mind that this polyfill requires that your JavaScript environment supports the [`BigInt64Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array) API.
+The minified code is small (only ~34kb) and can potentially be optionally loaded only when needed. Keep in mind that this polyfill requires that your JavaScript environment supports the [`BigInt64Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt64Array) API.
 
 ## Limitations
 
